@@ -1,0 +1,129 @@
+import { useMemo, useState } from 'react';
+import { iraqProvinces } from './data/iraqProvinces';
+
+const defaultProvince = iraqProvinces[0];
+
+function App() {
+  const [selectedProvince, setSelectedProvince] = useState(defaultProvince);
+  const [search, setSearch] = useState('');
+
+  const filteredProvinces = useMemo(() => {
+    return iraqProvinces.filter((province) =>
+      province.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search]);
+
+  return (
+    <div className="app-shell">
+      <header className="topbar">
+        <div>
+          <p className="eyebrow">Regional explorer</p>
+          <h1>Iraq Map</h1>
+        </div>
+        <div className="topbar__badge">18 Governorates</div>
+      </header>
+
+      <main className="content-grid">
+        <section className="map-panel card">
+          <div className="map-toolbar">
+            <div>
+              <p className="panel-label">Explore</p>
+              <h2>Governorates of Iraq</h2>
+            </div>
+            <input
+              type="text"
+              placeholder="Search province..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search province"
+            />
+          </div>
+
+          <div className="map-container">
+            <svg viewBox="0 0 700 720" className="iraq-map" role="img" aria-label="Map of Iraq">
+              <path
+                className="iraq-outline"
+                d="M160 55 L235 35 L300 55 L365 18 L430 30 L515 65 L585 100 L635 155 L680 255 L650 340 L610 415 L620 515 L582 610 L528 680 L432 705 L330 662 L260 620 L180 560 L120 470 L90 365 L102 245 L120 165 Z"
+              />
+
+              {filteredProvinces.map((province) => {
+                const isSelected = selectedProvince.id === province.id;
+
+                return (
+                  <g
+                    key={province.id}
+                    className="province-group"
+                    onClick={() => setSelectedProvince(province)}
+                  >
+                    <polygon
+                      points={province.points}
+                      className={`province ${isSelected ? 'selected' : ''}`}
+                    />
+                    <text x={province.label.x} y={province.label.y} className="province-label">
+                      {province.shortName}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        </section>
+
+        <aside className="sidebar card">
+          <div className="sidebar__header">
+            <p className="panel-label">Selected region</p>
+            <h3>{selectedProvince.name}</h3>
+          </div>
+
+          <div className="info-card">
+            <div className="info-card__row">
+              <span>Capital</span>
+              <strong>{selectedProvince.capital}</strong>
+            </div>
+            <div className="info-card__row">
+              <span>Region</span>
+              <strong>{selectedProvince.region}</strong>
+            </div>
+            <div className="info-card__row">
+              <span>Population</span>
+              <strong>{selectedProvince.population}</strong>
+            </div>
+          </div>
+
+          <p className="description">{selectedProvince.description}</p>
+
+          <div className="mini-stats">
+            <div>
+              <span>Area</span>
+              <strong>{selectedProvince.area}</strong>
+            </div>
+            <div>
+              <span>Climate</span>
+              <strong>{selectedProvince.climate}</strong>
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <section className="list-panel card">
+        {filteredProvinces.length > 0 ? (
+          filteredProvinces.map((province) => (
+            <button
+              key={province.id}
+              type="button"
+              className={`province-item ${selectedProvince.id === province.id ? 'active' : ''}`}
+              onClick={() => setSelectedProvince(province)}
+            >
+              <span>{province.name}</span>
+              <small>{province.capital}</small>
+            </button>
+          ))
+        ) : (
+          <p className="empty-state">No governorates match your search.</p>
+        )}
+      </section>
+    </div>
+  );
+}
+
+export default App;
